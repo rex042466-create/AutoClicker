@@ -2,6 +2,8 @@ package com.example.autoclicker
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
@@ -47,7 +49,7 @@ class MainActivity : Activity() {
     }
 
     private fun checkAccessibilityPermission() {
-        val serviceName = "${packageName}/${AutoClickAccessibilityService::class.java.name}"
+        val serviceName = "${packageName}/.service.AutoClickAccessibilityService"
         var isEnabled = false
 
         try {
@@ -71,13 +73,21 @@ class MainActivity : Activity() {
         }
 
         if (isEnabled) {
-            statusText.text = "狀態：✅ 無障礙權限已啟用！\n\n【使用引導與功能介紹】\n1. 請切換至 LINE 「散步趣」的移動頁面。\n2. 點擊「獲得金幣」後，本工具會自動幫您點擊中間的「60 獲得」。\n3. 進入廣告後會自動識別左上角跳過符號，並在最後自動點擊右上角「×」關閉廣告。\n4. 自動循環幫您省去長時間手動看廣告的麻煩！"
-            btnAction.text = "重新整理權限狀態"
-            btnAction.setOnClickListener {
-                checkAccessibilityPermission()
+            // 權限已開，啟動懸浮窗
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                statusText.text = "請開啟「顯示在其他應用程式上層」權限"
+                btnAction.text = "前往設定懸浮窗權限"
+                btnAction.setOnClickListener {
+                    startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+                }
+            } else {
+                startService(Intent(this, FloatingWindowService::class.java))
+                statusText.text = "狀態：✅ 無障礙權限已啟用！\n\n【使用引導】\n1. 懸浮視窗已在螢幕上顯示。\n2. 請直接切換至 LINE 「散步趣」即可開始運作。"
+                btnAction.text = "重新整理狀態"
+                btnAction.setOnClickListener { checkAccessibilityPermission() }
             }
         } else {
-            statusText.text = "狀態：⚠️ 尚未開啟無障礙權限\n\n請點擊下方按鈕前往手機設定，找到「下載的應用程式」，將「散步趣廣告點擊器」切換為開啟。"
+            statusText.text = "狀態：⚠️ 尚未開啟無障礙權限\n\n請點擊下方按鈕前往手機設定，將本 App 的服務開啟。"
             btnAction.text = "前往開啟無障礙權限"
             btnAction.setOnClickListener {
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
