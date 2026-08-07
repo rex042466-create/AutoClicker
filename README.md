@@ -1,1 +1,1 @@
-# AutoClicker
+# 散步趣廣告點擊器
