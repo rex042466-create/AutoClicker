@@ -1,4 +1,4 @@
-package com.example
+package com.example.autoclicker
 
 import android.app.Service
 import android.content.Intent
