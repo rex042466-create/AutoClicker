@@ -18,7 +18,9 @@ class FloatingWindowService : Service() {
 
         fun updateCount() {
             clickCount++
-            instance?.statusView?.text = "已完成廣告：$clickCount / 100 次"
+            instance?.statusView?.post {
+                instance?.statusView?.text = "已完成廣告：$clickCount 次"
+            }
         }
     }
 
@@ -28,9 +30,9 @@ class FloatingWindowService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         statusView = TextView(this).apply {
-            text = "已完成廣告：$clickCount / 100 次"
-            setBackgroundColor(0xAA000000.toInt()) // 半透明黑色背景
-            setTextColor(0xFFFFFFFF.toInt())      // 白色文字
+            text = "已完成廣告：0 次"
+            setBackgroundColor(0xAA000000.toInt()) 
+            setTextColor(0xFFFFFFFF.toInt())      
             setPadding(30, 20, 30, 20)
             textSize = 14f
         }
@@ -47,18 +49,12 @@ class FloatingWindowService : Service() {
             y = 200
         }
 
-        try {
-            windowManager.addView(statusView, params)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        windowManager.addView(statusView, params)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (::statusView.isInitialized) {
-            windowManager.removeView(statusView)
-        }
+        windowManager.removeView(statusView)
         instance = null
     }
 
